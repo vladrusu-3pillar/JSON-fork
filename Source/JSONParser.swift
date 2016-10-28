@@ -220,7 +220,96 @@ extension GenericJSONParser {
     }
 
     private func parseNumber() throws -> JSON {
-        return .numberValue(0)
+        let sign = expect("-") ? -1.0 : 1.0
+        var integer: Int64 = 0
+        
+        switch currentChar {
+        case Char(ascii: "0"): advance()
+        case Char(ascii: "1") ... Char(ascii: "9"):
+            while cur != end {
+                if let value = digitToInt(currentChar) {
+                    integer = (integer * 10) + Int64(value)
+                } else {
+                    break
+                }
+                advance()
+            }
+        default:
+            throw JSONParseError.invalidStringError(
+                reason: "missing double quote",
+                lineNumber: lineNumber,
+                columnNumber: columnNumber
+            )
+        }
+        
+//        if integer != Int64(Double(integer)) {
+//            throw JSONParseError.invalidNumberError(
+//                reason: "too large number",
+//                lineNumber: lineNumber,
+//                columnNumber: columnNumber
+//            )
+//        }
+        
+        var fraction: Double = 0.0
+        
+        if expect(".") {
+            var factor = 0.1
+            var fractionLength = 0
+            
+            while cur != end {
+                if let value = digitToInt(currentChar) {
+                    fraction += (Double(value) * factor)
+                    factor /= 10
+                    fractionLength += 1
+                } else {
+                    break
+                }
+                advance()
+            }
+            
+            if fractionLength == 0 {
+                throw JSONParseError.invalidNumberError(
+                    reason: "insufficient fraction part in number",
+                    lineNumber: lineNumber,
+                    columnNumber: columnNumber
+                )
+            }
+        }
+        
+        var exponent: Int64 = 0
+        
+        if expect("e") || expect("E") {
+            var expSign: Int64 = 1
+            
+            if expect("-") {
+                expSign = -1
+            } else if expect("+") {}
+            
+            exponent = 0
+            var exponentLength = 0
+            
+            while cur != end {
+                if let value = digitToInt(currentChar) {
+                    exponent = (exponent * 10) + Int64(value)
+                    exponentLength += 1
+                } else {
+                    break
+                }
+                advance()
+            }
+            
+            if exponentLength == 0 {
+                throw JSONParseError.invalidNumberError(
+                    reason: "insufficient exponent part in number",
+                    lineNumber: lineNumber,
+                    columnNumber: columnNumber
+                )
+            }
+            
+            exponent *= expSign
+        }
+        
+        return .numberValue(sign * (Double(integer) + fraction) * pow(10, Double(exponent)))
     }
 
     private func parseObject() throws -> JSON {
