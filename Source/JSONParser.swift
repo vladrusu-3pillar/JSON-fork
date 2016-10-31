@@ -103,6 +103,8 @@ extension GenericJSONParser {
             )
         }
 
+        print("parsing char: line: \(lineNumber) col: \(columnNumber) char: \(currentChar)\n")
+        
         switch currentChar {
         case Char(ascii: "n"): return try parseSymbol("null", JSON.nullValue)
         case Char(ascii: "t"): return try parseSymbol("true", JSON.booleanValue(true))
