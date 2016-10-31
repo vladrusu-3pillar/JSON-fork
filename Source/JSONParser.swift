@@ -220,6 +220,7 @@ extension GenericJSONParser {
     }
 
     private func parseNumber() throws -> JSON {
+        print("parsing number")
         let sign = expect("-") ? -1.0 : 1.0
         var integer: Int64 = 0
         
