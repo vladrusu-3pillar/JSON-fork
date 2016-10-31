@@ -242,13 +242,18 @@ extension GenericJSONParser {
             )
         }
         
-//        if integer != Int64(Double(integer)) {
-//            throw JSONParseError.invalidNumberError(
-//                reason: "too large number",
-//                lineNumber: lineNumber,
-//                columnNumber: columnNumber
-//            )
-//        }
+        print("===============")
+        print("\(integer)\n")
+        print("\(Double(integer))\n")
+        print("\(Int64(Double(integer)))\n")
+        
+        if integer != Int64(Double(integer)) {
+            throw JSONParseError.invalidNumberError(
+                reason: "too large number",
+                lineNumber: lineNumber,
+                columnNumber: columnNumber
+            )
+        }
         
         var fraction: Double = 0.0
         
